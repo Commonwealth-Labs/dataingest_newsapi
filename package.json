@@ -1,0 +1,20 @@
+{
+  "name": "newsapi",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build-and-run": "tsc -w & node --watch dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "pg": "^8.13.0",
+    "typescript": "^5.6.2"
+  },
+  "type": "module",
+  "dependencies": {
+    "@types/pg": "^8.11.10"
+  }
+}
