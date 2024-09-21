@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsc -w & node --env-file ./.env --watch dist/index.js",
+    "build:ts": "tsc",
     "build:docker": "docker build -t tinycode2/cl-di-newsapi ."
   },
   "author": "",
