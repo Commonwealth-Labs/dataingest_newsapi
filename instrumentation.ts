@@ -6,6 +6,35 @@ import { PeriodicExportingMetricReader, ConsoleMetricExporter } from '@opentelem
 import { Resource } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { ns, version } from './config.js';
+import { Tracer, Span } from '@opentelemetry/api';
+
+export function withTracer(tracer: Tracer) {
+
+    return async function forSpan<T>(spanName: string, strategy: (span: Span) => Promise<T>) {
+
+        return await tracer.startActiveSpan(spanName, async (span) => {
+
+            try {
+
+                return await strategy(span);
+
+            } catch (err: any) {
+
+                span.recordException(err);
+                throw err;
+
+            } finally {
+
+                span.end();
+
+            }
+
+        });
+
+    };
+
+}
+
 export { trace } from '@opentelemetry/api';
 
 const sdk = new NodeSDK({

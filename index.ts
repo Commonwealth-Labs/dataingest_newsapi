@@ -1,40 +1,34 @@
 import pg from "pg";
-import { trace } from "./instrumentation.js";
-import { connectionString, databaseName, criteria, apiKey, ns, version } from "./config.js";
+import { trace, withTracer } from "./instrumentation.js";
+import { connectionString, databaseName, criteria, apiKey, version } from "./config.js";
 import { Span } from "@opentelemetry/api";
+import { ns } from "./config.js";
 
 const { Client } = pg;
-const tracer = trace.getTracer(`${ns}__main`, version);
+const tracing = withTracer(trace.getTracer(`${ns}main`, version));
 
-await ensureDatabase(new Client({ connectionString }));
+await tracing(
+    "Ensuring database exists",
+    ensureDatabase
+);
 
-const normalClient = new Client({ connectionString: `${connectionString}/${databaseName}` });
-await normalClient.connect();
-await ensureDatabaseTables(normalClient);
+const db = await tracing(
+    "Connect to database and ensure tables exist",
+    async () => {
 
-const url = new URL("https://newsapi.org/v2/everything");
-url.searchParams.set("q", criteria);
-url.searchParams.set("apiKey", apiKey);
-
-await tracer.startActiveSpan("Calling API", async span => {
-
-    try {
-
-        await main(span);
-
-    } catch (err: any) {
-
-        span.recordException(err);
-
-    } finally {
-
-        span.end();
+        const client = new Client({ connectionString: `${connectionString}/${databaseName}` });
+        await client.connect();
+        await ensureDatabaseTables(client);
+        return client;
 
     }
+);
 
-});
+await tracing("Calling API", async (span: Span) => {
 
-async function main(span: Span) {
+    const url = new URL("https://newsapi.org/v2/everything");
+    url.searchParams.set("q", criteria);
+    url.searchParams.set("apiKey", apiKey);
 
     const response = await fetch(url);
     const json = await response.json();
@@ -59,11 +53,11 @@ async function main(span: Span) {
         }
     );
 
-}
+});
 
 async function countEvents() {
 
-    const result = await normalClient.query(
+    const result = await db.query(
         `
             SELECT MIN(event_date) as first, MAX(event_date) as last, COUNT(1)
             FROM news_event
@@ -75,7 +69,7 @@ async function countEvents() {
 
 async function insertArticle(item: any) {
 
-    return await normalClient.query(
+    return await db.query(
         `
             INSERT INTO news_event(title, description, url)
             SELECT $1, $2, $3::VARCHAR
@@ -108,8 +102,9 @@ async function ensureDatabaseTables(normalClient: pg.Client) {
 
 }
 
-async function ensureDatabase(client: pg.Client) {
+async function ensureDatabase() {
 
+    const client = new Client({ connectionString })
     await client.connect();
     await client.query(
         `
