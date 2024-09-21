@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build-and-run": "tsc -w & node --watch dist/index.js"
+    "dev": "tsc -w & node --env-file ./.env --watch dist/index.js",
+    "build:docker": "docker build -t tinycode2/cl-di-newsapi ."
   },
   "author": "",
   "license": "ISC",
