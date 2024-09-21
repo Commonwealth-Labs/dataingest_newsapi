@@ -12,6 +12,7 @@ await tracing(
     ensureDatabase
 );
 
+
 const db = await tracing(
     "Connect to database and ensure tables exist",
     async () => {
