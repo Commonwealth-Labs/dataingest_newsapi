@@ -14,29 +14,29 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-    - name: Dump job context
-      env:
-        JOB_CONTEXT: ${{ toJson(job) }}
-      run: echo "$JOB_CONTEXT"
-    - name: Dump steps context
-      env:
-        STEPS_CONTEXT: ${{ toJson(steps) }}
-      run: echo "$STEPS_CONTEXT"
-    - name: Dump runner context
-      env:
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: echo "$RUNNER_CONTEXT"
+    - name: Check if current commit is tagged with 'v' followed by a number
+      id: is_version_tagged
+      shell: bash
+      run: |
+        tags=$(git tag --points-at HEAD)
+        version_tagged=false
+        for tag in $tags; do
+          if [[ $tag =~ ^v[0-9] ]]; then
+            version_tagged=true
+            break
+          fi
+        done
+        echo "version_tagged=$version_tagged" >> $GITHUB_OUTPUT
+
     - uses: actions/setup-node@v3
       name: Install Node 22
       with:
         node-version: '22'
         cache: 'npm'
+
     - name: Install dependencies
       run: npm ci
+
     - name: Build project
       run: npm run build:ts
 
@@ -63,6 +63,6 @@ jobs:
       with:
         context: .
         file: ./Dockerfile
-        push: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        push: ${{ steps.is_version_tagged.outputs.version_tagged == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
