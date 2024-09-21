@@ -1,6 +1,6 @@
 {
   "name": "newsapi",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "index.js",
   "scripts": {
     "dev": "tsc -w & node --env-file ./.env --watch dist/index.js",
