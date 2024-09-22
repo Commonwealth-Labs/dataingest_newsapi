@@ -59,6 +59,8 @@ await tracing("Calling API", async (span: Span) => {
 
 });
 
+process.exit();
+
 async function countEvents() {
 
     const result = await db.query(
