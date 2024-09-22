@@ -19,7 +19,7 @@ jobs:
       shell: bash
       run: |
         tags=$(git tag --points-at HEAD)
-        echo $(git describe --exact-match --tags)
+        echo $tags
         version_tagged=false
         for tag in $tags; do
           echo $tag
