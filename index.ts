@@ -4,6 +4,9 @@ import { connectionString, databaseName, criteria, apiKey, version } from "./con
 import { Span } from "@opentelemetry/api";
 import { ns } from "./config.js";
 
+
+console.log(process.env);
+
 const { Client } = pg;
 const tracing = withTracer(trace.getTracer(`${ns}main`, version));
 
