@@ -1,5 +1,5 @@
 import pg from "pg";
-import { trace, withTracer } from "./instrumentation.js";
+import { sdk, trace, withTracer } from "./instrumentation.js";
 import { connectionString, databaseName, criteria, apiKey, version } from "./config.js";
 import { Span } from "@opentelemetry/api";
 import { ns } from "./config.js";
@@ -8,7 +8,8 @@ import { ns } from "./config.js";
 console.log(process.env);
 
 const { Client } = pg;
-const tracing = withTracer(trace.getTracer(`${ns}main`, version));
+const tracer = trace.getTracer(`${ns}main`, version);
+const tracing = withTracer(tracer);
 
 await tracing(
     "Ensuring database exists",
@@ -59,6 +60,7 @@ await tracing("Calling API", async (span: Span) => {
 
 });
 
+await sdk.shutdown();
 process.exit();
 
 async function countEvents() {
