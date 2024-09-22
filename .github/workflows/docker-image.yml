@@ -26,6 +26,7 @@ jobs:
             break
           fi
         done
+        echo $version_tagged
         echo "version_tagged=$version_tagged" >> $GITHUB_OUTPUT
 
     - uses: actions/setup-node@v3
