@@ -19,8 +19,10 @@ jobs:
       shell: bash
       run: |
         tags=$(git tag --points-at HEAD)
+        echo $tags
         version_tagged=false
         for tag in $tags; do
+          echo $tag
           if [[ $tag =~ ^v[0-9] ]]; then
             version_tagged=true
             break
