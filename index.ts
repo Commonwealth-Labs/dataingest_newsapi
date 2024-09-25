@@ -33,14 +33,23 @@ await tracing("Calling API", async (span: Span) => {
     url.searchParams.set("apiKey", apiKey);
 
     const response = await fetch(url);
+    if (!response.ok) {
+
+        span.addEvent("Failure response from API", { url: url.toString(), status: response.status, statusText: response.statusText });
+
+    }
     const json = await response.json();
     span.addEvent(`${json?.articles?.length} results returned`);
 
     let inserts = 0;
-    for (const item of json.articles) {
+    if (json?.articles?.length) {
 
-        const result = await insertArticle(item);
-        inserts += result.rowCount || 0;
+        for (const item of json.articles) {
+
+            const result = await insertArticle(item);
+            inserts += result.rowCount || 0;
+
+        }
 
     }
     span.addEvent(`Added ${inserts} news items`);
