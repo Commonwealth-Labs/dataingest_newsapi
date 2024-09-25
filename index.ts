@@ -8,6 +8,8 @@ const { Client } = pg;
 const tracer = trace.getTracer(`${ns}main`, version);
 const tracing = withTracer(tracer);
 
+console.log(process.env);
+
 await tracing(
     "Ensuring database exists",
     ensureDatabase
